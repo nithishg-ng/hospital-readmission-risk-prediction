@@ -1,0 +1,64 @@
+
+╔══════════════════════════════════════════════════════════════╗
+║         HOSPITAL READMISSION — DATA QUALITY REPORT          ║
+╚══════════════════════════════════════════════════════════════╝
+
+DATASET: hospital_readmission_dataset.csv
+ROWS   : 50,500 | COLUMNS: 28
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ISSUE 1: MISSING VALUES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Column                    | Missing % | Strategy (Step 3)
+--------------------------+-----------+---------------------------
+secondary_diagnosis       | 25.18%    | Fill with 'None'
+glucose_level             | 15.01%    | Median imputation
+doctor_rating             | 15.01%    | Median imputation
+followup_compliance_score | 14.94%    | Median imputation
+hospital_bill_amount      | 12.87%    | Median imputation
+final_readmission_reason  | 19.79%    | DROP (leakage column)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ISSUE 2: DUPLICATE RECORDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+→ Check result will appear after Cell 3 runs
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ISSUE 3: INCONSISTENT CATEGORIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Column  | Problem                       | Fix
+--------+-------------------------------+------------------
+gender  | Male/male/M/MALE/Female/      | Standardize to
+        | female/F/FEMALE               | 'Male' / 'Female'
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ISSUE 4: MIXED DATA FORMATS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Column               | Problem                    | Fix
+---------------------+----------------------------+------------------
+hospital_bill_amount | ₹125345 vs 26391.0         | Strip ₹, convert
+followup_date        | YYYY-MM-DD vs MM-DD-YYYY   | Unified parsing
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ISSUE 5: DATA LEAKAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Column                   | Why Leakage
+-------------------------+----------------------------------------
+readmission_notice_sent  | Sent only after readmission happens
+readmission_confirmed    | IS the event we are predicting
+final_readmission_reason | Known only after readmission
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ISSUE 6: CLASS IMBALANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Readmitted (1)     : 47,250 → 93.6%
+Not Readmitted (0) :  3,250 →  6.4%
+Fix                : SMOTE oversampling + class_weight
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ISSUE 7: DATA TYPE MISMATCHES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+hospital_bill_amount : object → float
+admission_date       : object → datetime
+discharge_date       : object → datetime
+followup_date        : object → datetime
